@@ -1,18 +1,34 @@
 module.exports = (bot) => {
     bot.start((ctx) => {
-        ctx.reply(
-`🤖 Welcome to Mass Action Bot!
+        ctx.replyWithPhoto(
+            'https://files.catbox.moe/ur59oh.png',
+            {
+                caption:
+`✨ WELCOME TO MASS ACTION BOT ✨
 
-👋 Hey ${ctx.from.first_name}!
+👋 Hey ${ctx.from.first_name}
 
-Commands:
-/banall
-/kickall
-/muteall
-/unmuteall
-/stats
+⚡ A powerful group moderation bot
+built for mass actions.
 
-Developer: @BadMundaXD`
+🔒 Fast • Safe • Admin Friendly
+
+👇 Use buttons below to continue`,
+                reply_markup: {
+                    inline_keyboard: [
+                        [
+                            { text: '➕ ADD ME', url: 'https://t.me/' + ctx.botInfo.username + '?startgroup=true' }
+                        ],
+                        [
+                            { text: '🆘 SUPPORT', url: 'https://t.me/PBX_CHAT' },
+                            { text: '📢 UPDATES', url: 'https://t.me/PBX_CHAT' }
+                        ],
+                        [
+                            { text: '❓ HELP', callback_data: 'help_menu' }
+                        ]
+                    ]
+                }
+            }
         );
     });
 };
