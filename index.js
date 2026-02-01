@@ -36,16 +36,15 @@ const isBotAdmin = async (ctx) => {
     }
 };
 
-// Start command
 bot.start((ctx) => {
     const welcomeMessage = `
-🤖 **Welcome to Mass Action Bot!**
+🤖 Welcome to Mass Action Bot!
 
 👋 Hey ${ctx.from.first_name}!
 
 I'm a powerful admin tool bot with mass action capabilities.
 
-**Available Commands:**
+Available Commands:
 ├ /banall - Ban all members
 ├ /unbanall - Unban all members  
 ├ /kickall - Kick all members
@@ -54,7 +53,7 @@ I'm a powerful admin tool bot with mass action capabilities.
 ├ /stats - Get group statistics
 └ /help - Show this help
 
-**Features:**
+Features:
 ✅ Mass ban/unban members
 ✅ Mass kick members
 ✅ Mass mute/unmute members
@@ -62,15 +61,15 @@ I'm a powerful admin tool bot with mass action capabilities.
 ✅ Progress tracking
 ✅ Error handling
 
-**Requirements:**
+Requirements:
 • I must be admin with ban/mute permissions
 • You must be admin to use commands
 
-**Developer:** @BadMundaXD
-**Support:** @PBX_CHAT
+Developer: @BadMundaXD
+Support: @PBX_CHAT
     `;
-    
-    ctx.replyWithMarkdown(welcomeMessage);
+
+    ctx.reply(welcomeMessage);
 });
 
 // Help command
