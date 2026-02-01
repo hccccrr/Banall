@@ -1,5 +1,7 @@
 const { isAdmin, isBotAdmin } = require('./helpers');
 
+const kickAllChats = new Map();
+
 module.exports = (bot) => {
 
     bot.command('kickall', async (ctx) => {
@@ -7,52 +9,39 @@ module.exports = (bot) => {
         if (!await isAdmin(ctx)) return;
         if (!await isBotAdmin(ctx)) return;
 
+        kickAllChats.set(ctx.chat.id, true);
+
         ctx.reply(
-`⚠️ KICK ALL MEMBERS
+`🚨 KICKALL MODE ENABLED
 
-All non-admin members
-will be removed.
+Any NON-ADMIN who sends
+a message will be kicked.
 
-Confirm to continue:`,
-        {
-            reply_markup: {
-                inline_keyboard: [[
-                    { text: '🔥 CONFIRM KICKALL', callback_data: 'kickall_yes' },
-                    { text: '❌ CANCEL', callback_data: 'kickall_no' }
-                ]]
-            }
-        });
+Use /stopkick to stop.`
+        );
     });
 
-    bot.on('callback_query', async (ctx) => {
-        if (!ctx.callbackQuery.data.startsWith('kickall')) return;
+    bot.command('stopkick', async (ctx) => {
+        if (!await isAdmin(ctx)) return;
+        kickAllChats.delete(ctx.chat.id);
+        ctx.reply('✅ Kickall stopped');
+    });
 
-        if (!await isAdmin(ctx))
-            return ctx.answerCbQuery('Admin only', { show_alert: true });
+    bot.on('message', async (ctx, next) => {
 
         const chatId = ctx.chat.id;
+        if (!kickAllChats.has(chatId)) return next();
 
-        if (ctx.callbackQuery.data === 'kickall_no') {
-            await ctx.editMessageText('❌ Kickall cancelled');
-            return ctx.answerCbQuery();
-        }
+        // ignore commands
+        if (ctx.message?.text?.startsWith('/')) return next();
 
-        await ctx.editMessageText('🚨 Kicking members...');
+        try {
+            const m = await ctx.telegram.getChatMember(chatId, ctx.from.id);
+            if (['administrator', 'creator'].includes(m.status)) return next();
 
-        ctx.answerCbQuery('Processing...');
+            await ctx.telegram.kickChatMember(chatId, ctx.from.id);
+        } catch {}
 
-        // ⚠️ Telegram does NOT give full member list
-        // We kick recent message senders instead
-
-        bot.on('message', async (msgCtx) => {
-            if (msgCtx.chat.id !== chatId) return;
-
-            const m = await msgCtx.telegram.getChatMember(chatId, msgCtx.from.id);
-            if (['administrator', 'creator'].includes(m.status)) return;
-
-            try {
-                await msgCtx.telegram.kickChatMember(chatId, msgCtx.from.id);
-            } catch {}
-        });
+        return next();
     });
 };
