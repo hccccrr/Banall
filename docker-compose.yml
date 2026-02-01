@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  bot:
+    build: .
+    container_name: telegram-mass-bot
+    restart: unless-stopped
+    env_file:
+      - .env
+    depends_on:
+      - mongodb
+    networks:
+      - bot-network
+
+  mongodb:
+    image: mongo:6
+    container_name: bot-mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_DATABASE: telegram-bot
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - bot-network
+
+networks:
+  bot-network:
+    driver: bridge
+
+volumes:
+  mongo-data:
+  
