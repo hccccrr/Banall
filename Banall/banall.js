@@ -14,8 +14,8 @@ module.exports = (bot) => {
         ctx.reply(
 `🚨 MASS BAN MODE ENABLED
 
-👤 Any non-admin who sends a message
-will be BANNED instantly.
+👤 Any NON-ADMIN message
+will cause instant BAN.
 
 Use /stopban to disable.`
         );
@@ -28,17 +28,20 @@ Use /stopban to disable.`
         ctx.reply('✅ Mass ban mode disabled');
     });
 
-    // 🔥 IMPORTANT FIX HERE 👇
+    // 🔥 REAL WORKING LISTENER
     bot.on('message', async (ctx, next) => {
 
         const chatId = ctx.chat.id;
 
-        // agar banall ON nahi → aage bhej do
+        // banall OFF → continue normal flow
         if (!banAllChats.has(chatId)) {
             return next();
         }
 
-        if (!ctx.from) return next();
+        // ignore commands like /start /help etc
+        if (ctx.message?.text?.startsWith('/')) {
+            return next();
+        }
 
         try {
             const member = await ctx.telegram.getChatMember(chatId, ctx.from.id);
@@ -53,6 +56,6 @@ Use /stopban to disable.`
             console.log('Ban failed:', e.message);
         }
 
-        return next(); // 🔥 MOST IMPORTANT
+        return next();
     });
 };
