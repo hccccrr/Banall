@@ -1,11 +1,9 @@
 const { isAdmin, isBotAdmin } = require('./helpers');
 
-// 🔥 In-memory banall state
 const banAllChats = new Map();
 
 module.exports = (bot) => {
 
-    // ENABLE BANALL
     bot.command('banall', async (ctx) => {
         if (ctx.chat.type === 'private') return;
         if (!await isAdmin(ctx)) return ctx.reply('❌ Admin only');
@@ -23,32 +21,38 @@ Use /stopban to disable.`
         );
     });
 
-    // DISABLE BANALL
     bot.command('stopban', async (ctx) => {
         if (!await isAdmin(ctx)) return;
 
         banAllChats.delete(ctx.chat.id);
-
         ctx.reply('✅ Mass ban mode disabled');
     });
 
-    // 🔥 MESSAGE LISTENER (REAL WORKING)
-    bot.on('message', async (ctx) => {
+    // 🔥 IMPORTANT FIX HERE 👇
+    bot.on('message', async (ctx, next) => {
+
         const chatId = ctx.chat.id;
 
-        if (!banAllChats.has(chatId)) return;
-        if (!ctx.from) return;
+        // agar banall ON nahi → aage bhej do
+        if (!banAllChats.has(chatId)) {
+            return next();
+        }
 
-        const userId = ctx.from.id;
+        if (!ctx.from) return next();
 
         try {
-            const member = await ctx.telegram.getChatMember(chatId, userId);
-            if (['creator', 'administrator'].includes(member.status)) return;
+            const member = await ctx.telegram.getChatMember(chatId, ctx.from.id);
 
-            await ctx.telegram.banChatMember(chatId, userId);
+            if (['creator', 'administrator'].includes(member.status)) {
+                return next();
+            }
+
+            await ctx.telegram.banChatMember(chatId, ctx.from.id);
             await ctx.reply(`🚫 Banned: ${ctx.from.first_name}`);
         } catch (e) {
             console.log('Ban failed:', e.message);
         }
+
+        return next(); // 🔥 MOST IMPORTANT
     });
 };
